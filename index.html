@@ -183,6 +183,7 @@
             align-items: center;
             width: 100%;
             min-height: 420px;
+            position: relative;
         }
         canvas { display: block; max-width: 100%; height: auto; border-radius: 50%; }
 
@@ -250,9 +251,58 @@
             font-family: var(--font-digital);
         }
 
+        /* Estilo do odômetro dentro do velocímetro analógico */
+        .odometer-overlay {
+            position: absolute;
+            bottom: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid rgba(0, 255, 136, 0.6);
+            border-radius: 12px;
+            padding: 8px 16px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3), inset 0 0 10px rgba(0, 255, 136, 0.1);
+            backdrop-filter: blur(5px);
+            z-index: 10;
+        }
+        
+        .odometer-label {
+            font-family: var(--font-digital);
+            font-size: 0.55rem;
+            letter-spacing: 2px;
+            color: #00ff88;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .odometer-value {
+            font-family: var(--font-digital);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+        
+        .odometer-unit {
+            font-family: var(--font-digital);
+            font-size: 0.5rem;
+            color: #888;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
         @media (max-width: 600px) {
             .speed-value { font-size: clamp(6rem, 35vw, 12rem); }
             .map-container { height: 30vh; }
+            .odometer-overlay {
+                bottom: 14%;
+                padding: 6px 12px;
+            }
+            .odometer-value {
+                font-size: 1rem;
+            }
         }
     </style>
 </head>
@@ -289,6 +339,12 @@
         <div id="panel-analog">
             <div class="analog-wrapper">
                 <canvas id="gaugeCanvas" width="520" height="520"></canvas>
+                <!-- Odômetro sobreposto ao velocímetro analógico -->
+                <div class="odometer-overlay">
+                    <div class="odometer-label">Odômetro</div>
+                    <div class="odometer-value" id="odometer-value">0.00</div>
+                    <div class="odometer-unit">km</div>
+                </div>
             </div>
             <div class="gps-warning" id="gpsWarningAnalog">🔍 Buscando sinal GPS...</div>
             <div class="progress-container">
@@ -335,6 +391,7 @@
             const gpsWarningAnalog = document.getElementById('gpsWarningAnalog');
             const cubeElement = document.getElementById('cubeElement');
             const cubeCorner = document.getElementById('cubeCorner');
+            const odometerValue = document.getElementById('odometer-value');
 
             cubeCorner.addEventListener('click', () => cubeElement.classList.toggle('rotating'));
 
@@ -407,7 +464,10 @@
                 }
                 lastCoord = { lat, lon };
 
-                if (distVal) distVal.innerText = (totalDistance / 1000).toFixed(2) + " km";
+                // Atualizar odômetro no velocímetro analógico
+                const distanceKm = (totalDistance / 1000).toFixed(2);
+                if (distVal) distVal.innerText = distanceKm + " km";
+                if (odometerValue) odometerValue.innerText = distanceKm;
                 if (avgVal) avgVal.innerText = displaySpeed;
                 if (dirVal) dirVal.innerText = getCardinals(pos.coords.heading);
 
